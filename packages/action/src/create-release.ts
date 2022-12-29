@@ -28,6 +28,8 @@ function allReleases(
 export default async function createRelease(
   tagName: string,
   releaseName: string,
+  owner: string,
+  repo: string,
   body?: string,
   commitish?: string,
   draft = true,
@@ -39,9 +41,6 @@ export default async function createRelease(
 
   // Get authenticated GitHub client (Ocktokit): https://github.com/actions/toolkit/tree/master/packages/github#usage
   const github = getOctokit(process.env.GITHUB_TOKEN);
-
-  // Get owner and repo from context of payload that triggered the action
-  const { owner, repo } = context.repo;
 
   const bodyPath = core.getInput('body_path', { required: false });
   let bodyFileContent = null;

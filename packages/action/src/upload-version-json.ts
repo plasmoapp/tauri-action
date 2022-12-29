@@ -1,4 +1,4 @@
-import { getOctokit, context } from '@actions/github';
+import { getOctokit } from '@actions/github';
 import { resolve } from 'path';
 import { readFileSync, writeFileSync } from 'fs';
 import uploadAssets from './upload-release-assets';
@@ -12,12 +12,16 @@ export default async function uploadVersionJSON({
   notes,
   tagName,
   releaseId,
+  owner,
+  repo,
   artifacts,
 }: {
   version: string;
   notes: string;
   tagName: string;
   releaseId: number;
+  owner: string;
+  repo: string;
   artifacts: Artifact[];
 }) {
   if (process.env.GITHUB_TOKEN === undefined) {
@@ -36,8 +40,8 @@ export default async function uploadVersionJSON({
   };
 
   const assets = await github.rest.repos.listReleaseAssets({
-    owner: context.repo.owner,
-    repo: context.repo.repo,
+    owner,
+    repo,
     release_id: releaseId,
     per_page: 50,
   });
@@ -48,8 +52,8 @@ export default async function uploadVersionJSON({
       await github.request(
         'GET /repos/{owner}/{repo}/releases/assets/{asset_id}',
         {
-          owner: context.repo.owner,
-          repo: context.repo.repo,
+          owner,
+          repo,
           asset_id: asset.id,
           headers: {
             accept: 'application/octet-stream',
@@ -64,8 +68,8 @@ export default async function uploadVersionJSON({
 
     // https://docs.github.com/en/rest/releases/assets#update-a-release-asset
     await github.rest.repos.deleteReleaseAsset({
-      owner: context.repo.owner,
-      repo: context.repo.repo,
+      owner,
+      repo,
       release_id: releaseId,
       asset_id: asset.id,
     });
@@ -120,5 +124,5 @@ export default async function uploadVersionJSON({
   writeFileSync(versionFile, JSON.stringify(versionContent, null, 2));
 
   console.log(`Uploading ${versionFile}...`);
-  await uploadAssets(releaseId, [{ path: versionFile, arch: '' }]);
+  await uploadAssets(releaseId, owner, repo, [{ path: versionFile, arch: '' }]);
 }

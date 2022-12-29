@@ -13,6 +13,7 @@ import {
 } from '@tauri-apps/action-core';
 import type { BuildOptions } from '@tauri-apps/action-core';
 import stringArgv from 'string-argv';
+import { context } from '@actions/github';
 
 async function run(): Promise<void> {
   try {
@@ -38,6 +39,9 @@ async function run(): Promise<void> {
     const draft = core.getBooleanInput('releaseDraft');
     const prerelease = core.getBooleanInput('prerelease');
     const commitish = core.getInput('releaseCommitish') || null;
+
+    let releaseRepoOwner = core.getInput('releaseRepoOwner') || context.repo.owner;
+    let releaseRepoName = core.getInput('releaseRepoName') || context.repo.repo;
 
     if (!releaseId) {
       if (Boolean(tagName) !== Boolean(releaseName)) {
@@ -72,35 +76,35 @@ async function run(): Promise<void> {
       JSON.stringify(artifacts.map((a) => a.path))
     );
 
-    if (tagName && !releaseId) {
-      const packageJson = getPackageJson(projectPath);
-      const templates = [
-        {
-          key: '__VERSION__',
-          value: info.version || packageJson.version,
-        },
-      ];
+    // if (tagName && !releaseId) {
+    //   const packageJson = getPackageJson(projectPath);
+    //   const templates = [
+    //     {
+    //       key: '__VERSION__',
+    //       value: info.version || packageJson.version,
+    //     },
+    //   ];
 
-      templates.forEach((template) => {
-        const regex = new RegExp(template.key, 'g');
-        tagName = tagName.replace(regex, template.value);
-        releaseName = releaseName.replace(regex, template.value);
-        body = body.replace(regex, template.value);
-      });
+    //   templates.forEach((template) => {
+    //     const regex = new RegExp(template.key, 'g');
+    //     tagName = tagName.replace(regex, template.value);
+    //     releaseName = releaseName.replace(regex, template.value);
+    //     body = body.replace(regex, template.value);
+    //   });
 
-      const releaseData = await createRelease(
-        tagName,
-        releaseName,
-        body,
-        commitish || undefined,
-        draft,
-        prerelease
-      );
-      releaseId = releaseData.id;
-      core.setOutput('releaseUploadUrl', releaseData.uploadUrl);
-      core.setOutput('releaseId', releaseData.id.toString());
-      core.setOutput('releaseHtmlUrl', releaseData.htmlUrl);
-    }
+    //   const releaseData = await createRelease(
+    //     tagName,
+    //     releaseName,
+    //     body,
+    //     commitish || undefined,
+    //     draft,
+    //     prerelease
+    //   );
+    //   releaseId = releaseData.id;
+    //   core.setOutput('releaseUploadUrl', releaseData.uploadUrl);
+    //   core.setOutput('releaseId', releaseData.id.toString());
+    //   core.setOutput('releaseHtmlUrl', releaseData.htmlUrl);
+    // }
 
     if (releaseId) {
       if (platform() === 'darwin') {
@@ -127,12 +131,19 @@ async function run(): Promise<void> {
           i++;
         }
       }
-      await uploadReleaseAssets(releaseId, artifacts);
+      await uploadReleaseAssets(
+        releaseId,
+        releaseRepoOwner,
+        releaseRepoName,
+        artifacts,
+      );
       await uploadVersionJSON({
         version: info.version,
         notes: body,
         tagName,
         releaseId,
+        owner: releaseRepoOwner,
+        repo: releaseRepoName,
         artifacts,
       });
     }
