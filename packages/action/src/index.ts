@@ -76,35 +76,39 @@ async function run(): Promise<void> {
       JSON.stringify(artifacts.map((a) => a.path))
     );
 
-    // if (tagName && !releaseId) {
-    //   const packageJson = getPackageJson(projectPath);
-    //   const templates = [
-    //     {
-    //       key: '__VERSION__',
-    //       value: info.version || packageJson.version,
-    //     },
-    //   ];
+    const packageJson = getPackageJson(projectPath);
 
-    //   templates.forEach((template) => {
-    //     const regex = new RegExp(template.key, 'g');
-    //     tagName = tagName.replace(regex, template.value);
-    //     releaseName = releaseName.replace(regex, template.value);
-    //     body = body.replace(regex, template.value);
-    //   });
+    const templates = [
+      {
+        key: '__VERSION__',
+        value: info.version || packageJson.version,
+      },
+    ];
 
-    //   const releaseData = await createRelease(
-    //     tagName,
-    //     releaseName,
-    //     body,
-    //     commitish || undefined,
-    //     draft,
-    //     prerelease
-    //   );
-    //   releaseId = releaseData.id;
-    //   core.setOutput('releaseUploadUrl', releaseData.uploadUrl);
-    //   core.setOutput('releaseId', releaseData.id.toString());
-    //   core.setOutput('releaseHtmlUrl', releaseData.htmlUrl);
-    // }
+    templates.forEach((template) => {
+      const regex = new RegExp(template.key, 'g');
+      tagName = tagName.replace(regex, template.value);
+      releaseName = releaseName.replace(regex, template.value);
+      body = body.replace(regex, template.value);
+    });
+
+
+    if (tagName && !releaseId) {
+      const releaseData = await createRelease(
+        tagName,
+        releaseName,
+        releaseRepoOwner,
+        releaseRepoName,
+        body,
+        commitish || undefined,
+        draft,
+        prerelease
+      );
+      releaseId = releaseData.id;
+      core.setOutput('releaseUploadUrl', releaseData.uploadUrl);
+      core.setOutput('releaseId', releaseData.id.toString());
+      core.setOutput('releaseHtmlUrl', releaseData.htmlUrl);
+    }
 
     if (releaseId) {
       if (platform() === 'darwin') {
