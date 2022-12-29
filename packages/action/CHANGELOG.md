@@ -1,5 +1,14 @@
 # Changelog
 
+## \[0.3.2]
+
+- Add the paths of generated artifacts as an action output.
+  - [40e660a](https://www.github.com/tauri-apps/tauri-action/commit/40e660a8ca7dc5e7f5f67710a0212887163c5450) add artifact paths to action output ([#343](https://www.github.com/tauri-apps/tauri-action/pull/343)) on 2022-12-15
+- Correctly handle `--target` option in `args` input.
+  - [a99d0ba](https://www.github.com/tauri-apps/tauri-action/commit/a99d0bae58a558b23da95394a2a38122574b0f78) feat: Support `--target` input in `args` ([#301](https://www.github.com/tauri-apps/tauri-action/pull/301)) on 2022-10-31
+- Fixes usage with `vue-cli-plugin-tauri`.
+  - [f7dcc97](https://www.github.com/tauri-apps/tauri-action/commit/f7dcc97c2dbce3e806c3e72c34ff08fd31dd191e) fix(core): vue-cli-plugin-tauri usage, closes [#288](https://www.github.com/tauri-apps/tauri-action/pull/288) ([#289](https://www.github.com/tauri-apps/tauri-action/pull/289)) on 2022-07-05
+
 ## \[0.3.1]
 
 - Added the `bundleIdentifier` input to modify Tauri's default bundle identifier when initializing a new Tauri app.
